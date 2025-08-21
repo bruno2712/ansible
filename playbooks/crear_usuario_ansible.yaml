@@ -1,0 +1,37 @@
+---
+- name: Preparar Nodos con Usuario de Servicio Ansible
+  hosts: servers_to_prepare  # Apunta al grupo de tu inventario
+  become: true               # Indica que las tareas se ejecutarán con sudo
+  gather_facts: false        # No necesitamos recoger facts para esta tarea
+
+  vars:
+    # Esta variable leerá el contenido de tu clave pública.
+    # Asegúrate de que la ruta sea correcta en tu servidor Ansible.
+    admin_public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
+
+  tasks:
+    - name: 1. Crear el usuario de servicio 'ansible'
+      ansible.builtin.user:
+        name: ansible
+        comment: "Ansible Service User"
+        shell: /sbin/nologin
+        system: true           # Crea un usuario de sistema, equivalente a --r
+        create_home: true      # Asegura que se cree /home/ansible
+        state: present
+
+    - name: 2. Configurar sudo sin contraseña para el usuario 'ansible'
+      ansible.builtin.copy:
+        dest: /etc/sudoers.d/ansible # Es la mejor práctica, no se edita sudoers directamente
+        content: "ansible ALL=(ALL) NOPASSWD: ALL"
+        owner: root
+        group: root
+        mode: '0440'
+        validate: /usr/sbin/visudo -csf %s # Valida la sintaxis del archivo antes de guardar
+
+    - name: 3. Asegurar la clave pública del administrador en authorized_keys
+      ansible.posix.authorized_key:
+        user: ansible
+        state: present
+        key: "{{ admin_public_key }}"
+        # Este módulo gestiona automáticamente los permisos del directorio .ssh (700) 
+        # y del archivo authorized_keys (600), así como su propietario.
