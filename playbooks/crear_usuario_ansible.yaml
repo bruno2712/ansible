@@ -2,12 +2,28 @@
 - name: Crear usuario de servicio para Ansible
   hosts: Rocky
   become: true
-  
-  vars:
-    admin_public_key: "{{ lookup('file', '~/.ssh/id_rsa.pub') }}"
 
   tasks:
-    - name: 1. Crear usuario servicio ansible
+
+    - name: Buscar clave pública
+      delegate_to: localhost
+      run_once: true
+      ansible.builtin.find:
+        paths: "~/.ssh"
+        patterns: "id*.pub"
+      register: key_publica
+
+    - name: Fallar si no se encuentra ninguna clave pública
+      delegate_to: localhost
+      run_once: true
+      ansible.builtin.fail:
+        msg:| 
+        Error - Sin clave publica.
+        No se encontró ninguna clave pública (id*.pub) en ~/.ssh/.
+        Para generar una usar ssh-keygen.
+      when: key_publica.files | length == 0
+
+    - name: Crear usuario servicio ansible
       ansible.builtin.user:
         name: ansible
         comment: "Usuario de servicio ansible"
@@ -16,7 +32,7 @@
         create_home: true                                                   # Crea el home del usuario
         state: present
 
-    - name: 2. Permisos sudo sin contraseña para usuario ansible
+    - name: Permisos sudo sin contraseña para usuario ansible
       ansible.builtin.copy:
         dest: /etc/sudoers.d/ansible                                        
         content: "ansible ALL=(ALL) NOPASSWD: ALL"                          
@@ -25,7 +41,7 @@
         mode: '0440'
         validate: /usr/sbin/visudo -csf %s                                  # Valida la sintaxis del archivo antes de guardar
 
-    - name: 3. Guardar clave ssh en authorized_keys
+    - name: Guardar clave ssh en authorized_keys
       ansible.posix.authorized_key:
         user: ansible
         state: present
