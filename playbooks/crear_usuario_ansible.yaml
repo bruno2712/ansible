@@ -1,6 +1,6 @@
 ---
 - name: Crear usuario de servicio para Ansible
-  hosts: Rocky
+  hosts: Centos-9
   become: true
 
   tasks:
@@ -17,10 +17,7 @@
       delegate_to: localhost
       run_once: true
       ansible.builtin.fail:
-        msg:| 
-        Error - Sin clave publica.
-        No se encontró ninguna clave pública (id*.pub) en ~/.ssh/.
-        Para generar una usar ssh-keygen.
+        msg: "Error - Sin clave publica en ~/.ssh/. Para generar una usar ssh-keygen."
       when: key_publica.files | length == 0
 
     - name: Crear usuario servicio ansible
@@ -34,8 +31,8 @@
 
     - name: Permisos sudo sin contraseña para usuario ansible
       ansible.builtin.copy:
-        dest: /etc/sudoers.d/ansible                                        
-        content: "ansible ALL=(ALL) NOPASSWD: ALL"                          
+        dest: /etc/sudoers.d/ansible
+        content: "ansible ALL=(ALL) NOPASSWD: ALL"
         owner: root
         group: root
         mode: '0440'
