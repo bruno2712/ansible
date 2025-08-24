@@ -25,9 +25,10 @@
       ansible.builtin.user:
         name: ansible
         comment: "Usuario de servicio ansible"
-        shell: /sbin/nologin                                                # Deshabilita el login
+        shell: /bin/bash                                                    # Deshabilita el login
         system: true                                                        # Crea un usuario de sistema
         create_home: true                                                   # Crea el home del usuario
+        umask: '022'
         state: present
 
     - name: Permisos sudo sin contraseña para usuario ansible
