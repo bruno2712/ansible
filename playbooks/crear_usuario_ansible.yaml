@@ -8,6 +8,7 @@
     - name: Buscar clave pública
       delegate_to: localhost
       run_once: true
+      become: false
       ansible.builtin.find:
         paths: "~/.ssh"
         patterns: "id*.pub"
@@ -43,4 +44,5 @@
         user: ansible
         state: present
         key: "{{ lookup('file', key_publica.files[0].path) }}"
+
 
