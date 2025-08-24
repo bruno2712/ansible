@@ -1,0 +1,20 @@
+---
+- name: Instalar y configurar fail2ban con dnf
+  hosts: Centos-9
+  become: true
+
+  tasks:
+
+    - name: Instalar fail2ban
+      ansible.builtin.dnf:
+        name: fail2ban
+        state: present
+
+    - name: Activar proteccion SSH en fail2ban
+      ansible.builtin.template:
+        src: ./plantillas/fail2ban/jail.local
+        dest: /etc/fail2ban/jail.local
+        owner: root
+        group: root
+        mode: '0644'
+

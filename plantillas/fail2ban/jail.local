@@ -1,0 +1,11 @@
+[DEFAULT]
+# Lista "blanca" de IP
+ignoreip = 192.168.2.2 192.168.2.3 192.168.1.0/24 
+
+[sshd]
+enabled = true
+# Tiempo de baneo = 3 horas
+bantime = 10800
+# Cantidad maxima de intentos durante un periodo de tiempo
+findtime = 600
+maxretry = 5
